@@ -23,7 +23,7 @@ enum SYMB
     SPACE = ' '
 };
 
-bool checkAndOr(char prev) noexcept;
+bool checkOperation(char prev) noexcept;
 bool checkNegat(char prev) noexcept;
 bool checkLeftBrace(char prev) noexcept;
 bool checkRightBrace(char prev) noexcept;
@@ -40,8 +40,11 @@ bool Validate(const std::string& str) noexcept
         {
             case AND:
             case OR:
+            case IMPLICATION_LEFT:
+            case IMPLICATION_RIGHT:
+            case EQUAL:
             {
-                if (!checkAndOr(prev))
+                if (!checkOperation(prev))
                     return false;
                 break;
             }
@@ -101,7 +104,7 @@ bool Validate(const std::string& str) noexcept
     return left == right;
 }
 
-bool checkAndOr(char prev) noexcept
+bool checkOperation(char prev) noexcept
 {
     if (prev == RIGHT_BRACE)
     {
@@ -118,6 +121,9 @@ bool checkNegat(char prev)noexcept
 {
     if (prev == AND ||
         prev == OR ||
+        prev == IMPLICATION_RIGHT ||
+        prev == IMPLICATION_LEFT ||
+        prev == EQUAL ||
         prev == LEFT_BRACE)
     {
         return true;
@@ -129,6 +135,9 @@ bool checkLeftBrace(char prev)noexcept
 {
     if (prev == AND ||
         prev == OR ||
+        prev == IMPLICATION_RIGHT ||
+        prev == IMPLICATION_LEFT ||
+        prev == EQUAL ||
         prev == LEFT_BRACE ||
         prev == NEGAT)
     {
@@ -157,6 +166,9 @@ bool checkLetter(char prev) noexcept
 {
     if (prev == AND ||
         prev == OR ||
+        prev == IMPLICATION_RIGHT ||
+        prev == IMPLICATION_LEFT ||
+        prev == EQUAL ||
         prev == LEFT_BRACE ||
         prev == NEGAT)
     {
