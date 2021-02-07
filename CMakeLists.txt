@@ -9,10 +9,13 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 set(SOURCE
         Validation.h
         Validation.cpp
+        Unpossible.h
+        Unpossible.cpp
         )
 
 set(TESTS
         tests/testValidation.cpp
+        tests/testUnpossible.cpp
         )
 
 add_executable(lois2 main.cpp ${SOURCE})
