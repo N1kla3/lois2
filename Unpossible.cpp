@@ -63,44 +63,16 @@ bool isPossible(const std::string& str) noexcept
     return true;
 }
 
-
-template<char ops>
-bool performOperation(bool first, bool second)
+bool PerformOperation(char op, bool first, bool second)
 {
-    std::cout << "Wrong operation\n";
-    return false;
-}
-
-template<>
-bool performOperation<'&'>(bool first, bool second)
-{
-    return first && second;
-}
-
-template<>
-bool performOperation<'|'>(bool first, bool second)
-{
-    return first || second;
-}
-
-// ->
-template<>
-bool performOperation<'>'>(bool first, bool second)
-{
-    return !(first && !second);
-}
-
-// <-
-template<>
-bool performOperation<'<'>(bool first, bool second)
-{
-    return !(!first && second);
-}
-
-template<>
-bool performOperation<'~'>(bool first, bool second)
-{
-    return first == second;
+    switch (op) {
+        case '&': return first && second;
+        case '|': return first || second;
+        case '~': return first == second;
+        case '<': return !(!first && second);
+        case '>': return !(first && !second);
+        default:return false;
+    }
 }
 
 bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::string& str)
@@ -123,7 +95,18 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
         return false;
     };
 
+    auto untilBrace = [&operation_stack, &values](){
+        while (operation_stack.top() != '(')
+        {
+            int second = values.top(); values.pop();
+            int first = values.top(); values.pop();
+            values.push(PerformOperation(operation_stack.top(), first, second));
+            operation_stack.pop();
+        }
+    };
+
     int brace_count = 0;
+    bool perform_operation = false;
 
     for (auto literal : str)
     {
@@ -132,15 +115,38 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
 
         if (literal == ')')
         {
-            //TODO  close brace logic
+            untilBrace();
+            continue;
         }
 
-        if (!checkVar(literal))
+        if (checkVar(literal))
         {
+            if (perform_operation)
+            {
+                perform_operation = false;
+                int second = values.top(); values.pop();
+                int first = values.top(); values.pop();
+                values.push(PerformOperation(operation_stack.top(), first, second));
+                operation_stack.pop();
+            }
+        }
+        else
+        {
+            if (!operation_stack.empty() && priority.at(literal) > priority.at(operation_stack.top()))
+            {
+                perform_operation = true;
+            }
             operation_stack.push(literal);
         }
     }
-
-    //TODO line ended
-
+    int result = values.top();
+    while (!operation_stack.empty())
+    {
+        int second = values.top(); values.pop();
+        int first = values.top(); values.pop();
+        result = PerformOperation(operation_stack.top(), first, second);
+        values.push(result);
+        operation_stack.pop();
+    }
+    return result;//TODO priority perforamtion
 }
