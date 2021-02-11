@@ -12,7 +12,7 @@ constexpr char alphabet[] = {'Q', 'W', 'E','R', 'T', 'Y', 'U', 'I', 'O', 'P', 'A
                          'K', 'L', 'Z', 'X', 'C', 'V', 'B', 'N', 'M'};
 
 const std::unordered_map<char, int> priority{
-        {'(', 7},
+        {'(', 0},
         {'-', 6},
         {'&', 5},
         {'|', 4},
@@ -21,8 +21,9 @@ const std::unordered_map<char, int> priority{
         {'~', 1}
 };
 
-bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::string& str);
+[[nodiscard]]bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::string& str);
 
+/** return true if formula always 0 */
 bool isPossible(const std::string& str) noexcept
 {
     if (!Validate(str))
@@ -31,7 +32,7 @@ bool isPossible(const std::string& str) noexcept
         return false;
     }
 
-    std::unordered_map<char, bool> vars{{'1', true}, {'0', false}};
+    std::unordered_map<char, bool> vars{};//TODO 1 0 problem,
 
     // find variables
     for (auto lit : str)
@@ -48,19 +49,21 @@ bool isPossible(const std::string& str) noexcept
     int mask = 1 << vars.size();
     int start = 0;
 
+    bool result = false;
+
     while (start < mask)
     {
         int i = 0;
         for (auto& [literal, value] : vars)
         {
-            start << i & 1 << i ? value = true : value = false;
+            start & (1 << i) ? value = true : value = false;
             i++;
         }
-        checkWithConstants(vars, str);
+        result = result ? result : checkWithConstants(vars, str);
         start++;
     }
 
-    return true;
+    return !result;
 }
 
 bool PerformOperation(char op, bool first, bool second)
@@ -71,7 +74,7 @@ bool PerformOperation(char op, bool first, bool second)
         case '~': return first == second;
         case '<': return !(!first && second);
         case '>': return !(first && !second);
-        default:return false;
+        default: return false;
     }
 }
 
@@ -88,7 +91,9 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
         {
             if (ch == literal)
             {
-                values.push(vars.at(ch));
+                if (literal == '1') values.push(true);
+                else if (literal == '0') values.push(false);
+                else values.push(vars.at(ch));
                 return true;
             }
         }
@@ -96,22 +101,65 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
     };
 
     auto untilBrace = [&operation_stack, &values](){
-        while (operation_stack.top() != '(')
+        while (!operation_stack.empty() && operation_stack.top() != '(')
         {
-            int second = values.top(); values.pop();
-            int first = values.top(); values.pop();
-            values.push(PerformOperation(operation_stack.top(), first, second));
-            operation_stack.pop();
+            if (operation_stack.top() == '-')
+            {
+                int temp = values.top() ? 0 : 1;
+                values.pop();
+                values.push(temp);
+                operation_stack.pop();
+            }
+            else
+            {
+                int second = values.top();
+                values.pop();
+                int first = values.top();
+                values.pop();
+                values.push(PerformOperation(operation_stack.top(), first, second));
+                operation_stack.pop();
+            }
         }
+        if (!operation_stack.empty()) operation_stack.pop();
     };
 
-    int brace_count = 0;
-    bool perform_operation = false;
+    auto untilPrior = [&operation_stack, &values](int prior){
+      while (!operation_stack.empty() && priority.at(operation_stack.top()) >= prior)
+      {
+          if (operation_stack.top() == '-')
+          {
+              int temp = values.top() ? 0 : 1;
+              values.pop();
+              values.push(temp);
+              operation_stack.pop();
+          }
+          else if (operation_stack.top() == '(')
+          {
+              return;
+          }
+          else
+          {
+              int second = values.top();
+              values.pop();
+              int first = values.top();
+              values.pop();
+              values.push(PerformOperation(operation_stack.top(), first, second));
+              operation_stack.pop();
+          }
+      }
+    };
+
+    // ALGORITHM ----------------------------
+
 
     for (auto literal : str)
     {
         if (literal == ' ') continue;
-        if (literal == '(') brace_count++;
+        if (literal == '(')
+        {
+            operation_stack.push(literal);
+            continue;
+        }
 
         if (literal == ')')
         {
@@ -119,34 +167,20 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
             continue;
         }
 
-        if (checkVar(literal))
+        if (!checkVar(literal))
         {
-            if (perform_operation)
+
+            if (!operation_stack.empty() && priority.at(literal) <= priority.at(operation_stack.top()))
             {
-                perform_operation = false;
-                int second = values.top(); values.pop();
-                int first = values.top(); values.pop();
-                values.push(PerformOperation(operation_stack.top(), first, second));
-                operation_stack.pop();
+                untilPrior(priority.at(literal));
+                operation_stack.push(literal);
+            }
+            else
+            {
+                operation_stack.push(literal);
             }
         }
-        else
-        {
-            if (!operation_stack.empty() && priority.at(literal) > priority.at(operation_stack.top()))
-            {
-                perform_operation = true;
-            }
-            operation_stack.push(literal);
-        }
     }
-    int result = values.top();
-    while (!operation_stack.empty())
-    {
-        int second = values.top(); values.pop();
-        int first = values.top(); values.pop();
-        result = PerformOperation(operation_stack.top(), first, second);
-        values.push(result);
-        operation_stack.pop();
-    }
-    return result;//TODO priority perforamtion
+    untilBrace();
+    return values.top();
 }
