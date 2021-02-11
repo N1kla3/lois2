@@ -32,7 +32,7 @@ bool isPossible(const std::string& str) noexcept
         return false;
     }
 
-    std::unordered_map<char, bool> vars{};//TODO 1 0 problem,
+    std::unordered_map<char, bool> vars{};
 
     // find variables
     for (auto lit : str)
