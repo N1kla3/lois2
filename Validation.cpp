@@ -31,6 +31,8 @@ bool checkLetter(char prev) noexcept;
 
 bool Validate(const std::string& str) noexcept
 {
+    if (str.empty()) return false;
+
     int left = 0, right = 0;
     char prev = '(';
 

@@ -33,3 +33,8 @@ TEST(ValidationTests, six)
 {
     EXPECT_TRUE(Validate("(G <D) ~(H> -O)"));
 }
+
+TEST(ValidationTests, empty)
+{
+    EXPECT_FALSE(Validate(""));
+}
