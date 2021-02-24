@@ -106,6 +106,58 @@ bool Validate(const std::string& str) noexcept
     return left == right;
 }
 
+std::string reformatInput(const std::string& str) noexcept
+{
+	std::string result{};
+	bool skip = false;
+	bool right_implication = false;
+	for (const auto ch : str)
+	{
+		if (skip)
+		{
+			skip = false;
+			continue;
+		}
+		if (ch == '\\')
+		{
+			result.push_back('|');
+			skip = true;
+		}
+		else if (ch == '/')
+		{
+			result.push_back('&');
+			skip = true;
+		}
+		else if (ch == '<')
+		{
+			result.push_back('<');
+			skip = true;
+		}
+		else if (ch == '-')
+		{
+			right_implication = true;
+		}
+		else if (ch == '>')
+		{
+			if (right_implication)
+			{
+				right_implication = false;
+			}
+			result.push_back('>');
+		}
+		else
+		{
+			if (right_implication)
+			{
+				result.push_back('-');
+				right_implication = false;
+			}
+			result.push_back(ch);
+		}
+	}
+	return result;
+}
+
 bool checkOperation(char prev) noexcept
 {
     if (prev == RIGHT_BRACE)

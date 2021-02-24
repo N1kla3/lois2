@@ -11,27 +11,27 @@ TEST(ValidationTests, first)
 
 TEST(ValidationTests, second)
 {
-    EXPECT_TRUE(Validate("A > B"));
+    EXPECT_TRUE(Validate(reformatInput("A -> B")));
 }
 
 TEST(ValidationTests, third)
 {
-    EXPECT_TRUE(Validate("((A ~ B) & C)"));
+    EXPECT_TRUE(Validate(reformatInput("((A ~ B) /\\ C)")));
 }
 
 TEST(ValidationTests, fourth)
 {
-    EXPECT_TRUE(Validate("A | B | D | G"));
+    EXPECT_TRUE(Validate(reformatInput("A \\/ B \\/ D \\/ G")));
 }
 
 TEST(ValidationTests, five)
 {
-    EXPECT_FALSE(Validate("(AA & B | (C ~ B)"));
+    EXPECT_FALSE(Validate(reformatInput("(AA /\\ B \\/ (C ~ B)")));
 }
 
 TEST(ValidationTests, six)
 {
-    EXPECT_TRUE(Validate("(G <D) ~(H> -O)"));
+    EXPECT_TRUE(Validate(reformatInput("(G <-D) ~(H-> -O)")));
 }
 
 TEST(ValidationTests, empty)

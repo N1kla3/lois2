@@ -3,4 +3,5 @@
 //
 #pragma once
 
+std::string reformatInput(const std::string& str) noexcept;
 bool Validate(const std::string& str) noexcept;
