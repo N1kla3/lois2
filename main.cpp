@@ -3,7 +3,9 @@
 #include <QVBoxLayout>
 #include <QTextEdit>
 #include <QMessageBox>
+#include <iostream>
 #include "Unpossible.h"
+#include "Validation.h"
 
 
 int main(int argc, char *argv[]) {
@@ -17,7 +19,8 @@ int main(int argc, char *argv[]) {
 
     QObject::connect(button, &QPushButton::clicked, [&text](){
       std::string value = text->toPlainText().toStdString();
-      bool result = isPossible(value);
+	    std::cout << value;
+	    bool result = isPossible(reformatInput(value));
       QString res = result ? "correct" : "bad";
       QMessageBox::information(nullptr,"Answer", res);
     });
