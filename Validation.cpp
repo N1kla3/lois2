@@ -1,6 +1,7 @@
-//
-// Created by nicola on 06/02/2021.
-//
+// Лабораторная работа №2 по дисциплине ЛОИС
+// Вариант 3: Проверить, непротиворечивая формула
+// Выполнена студентом грруппы 821703 БГУИР Владимирский Николай Викторович
+
 
 #include <string>
 #include <iostream>
@@ -32,6 +33,7 @@ bool checkLetter(char prev) noexcept;
 bool Validate(const std::string& str) noexcept
 {
     if (str.empty()) return false;
+	if (str[0] != '(') return false;
 
     int left = 0, right = 0;
     char prev = '(';
@@ -76,6 +78,7 @@ bool Validate(const std::string& str) noexcept
 
             case SPACE:
             {
+				return false;
                 ch = prev;
                 break;
             }
@@ -145,11 +148,15 @@ std::string reformatInput(const std::string& str) noexcept
 			}
 			result.push_back('>');
 		}
+		else if (ch == '!')
+        {
+			result.push_back('-');
+		}
 		else
 		{
 			if (right_implication)
 			{
-				result.push_back('-');
+				result.push_back('!');
 				right_implication = false;
 			}
 			result.push_back(ch);
@@ -173,11 +180,7 @@ bool checkOperation(char prev) noexcept
 
 bool checkNegat(char prev)noexcept
 {
-    if (prev == AND ||
-        prev == OR ||
-        prev == IMPLICATION_RIGHT ||
-        prev == IMPLICATION_LEFT ||
-        prev == EQUAL ||
+    if (
         prev == LEFT_BRACE)
     {
         return true;

@@ -1,6 +1,7 @@
-//
-// Created by nicola on 07/02/2021.
-//
+// Лабораторная работа №2 по дисциплине ЛОИС
+// Вариант 3: Проверить, непротиворечивая формула
+// Выполнена студентом грруппы 821703 БГУИР Владимирский Николай Викторович
+
 
 #include <iostream>
 #include <unordered_map>
@@ -59,7 +60,15 @@ bool isPossible(const std::string& str) noexcept
             start & (1 << i) ? value = true : value = false;
             i++;
         }
-        result = result ? result : checkWithConstants(vars, str);
+		try
+		{
+            result = result ? result : checkWithConstants(vars, str);
+		}
+		catch (std::exception& e)
+        {
+			std::cout << "inorrect braces wrappers";
+		    return false;
+		}
         start++;
     }
 
@@ -101,6 +110,16 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
     };
 
     auto untilBrace = [&operation_stack, &values](){
+		if (operation_stack.empty()) return false;
+        auto copy_stack = operation_stack;
+		bool flag = false;
+		while (!copy_stack.empty())
+        {
+			if (copy_stack.top() != '(') flag = true;
+			copy_stack.pop();
+		}
+		if (!flag) return false;
+
         while (!operation_stack.empty() && operation_stack.top() != '(')
         {
             if (operation_stack.top() == '-')
@@ -121,6 +140,7 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
             }
         }
         if (!operation_stack.empty()) operation_stack.pop();
+		return true;
     };
 
     auto untilPrior = [&operation_stack, &values](int prior){
@@ -163,7 +183,7 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
 
         if (literal == ')')
         {
-            untilBrace();
+            if (!untilBrace()) throw std::exception();
             continue;
         }
 
@@ -181,6 +201,6 @@ bool checkWithConstants(const std::unordered_map<char, bool>& vars, const std::s
             }
         }
     }
-    untilBrace();
+    //if (!untilBrace()) throw std::exception();
     return values.top();
 }
